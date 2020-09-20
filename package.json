@@ -3,7 +3,8 @@
     "version": "1.0.0",
     "scripts": {
         "ts": "tsc",
-        "watch": "tsc -watch"
+        "watch": "tsc -watch",
+        "webpack": "webpack"
     },
     "dependencies": {
         "requirejs": "^2.3.6",
