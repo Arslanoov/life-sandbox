@@ -11,6 +11,7 @@ export default class Rectangle implements RectangleInterface {
     needFood: boolean;
     getFood: boolean;
     satiety: number;
+    foodEaten: number = 0;
 
     constructor(
         id: number,
@@ -79,15 +80,17 @@ export default class Rectangle implements RectangleInterface {
 
     huntFood(state): void {
         if (this.getFood && this.hasFoodNear(state)) {
-            if (this.hasFoodNear(state)) {
-                const foodInfo = this.findNearestFood(state);
-                const food = state.objects.food[foodInfo.index];
+            const foodInfo = this.findNearestFood(state);
+            const food: Food = state.objects.food[foodInfo.index];
 
-                if (foodInfo.length === 0) {
-                    food.eat(state);
-                } else {
-                    this.goToFood(state, food);
+            if (foodInfo.length === 0) {
+                state.objects.food.splice(foodInfo.index, 1);
+                this.eat(food);
+                if (this.foodEaten % 2 === 0) {
+                    this.clone(state);
                 }
+            } else {
+                this.goToFood(state, food);
             }
         }
     }
@@ -99,13 +102,28 @@ export default class Rectangle implements RectangleInterface {
             this.moveDown();
         } else if (this.startX > food.startX) {
             this.moveLeft();
-        } else if (this.startY > food.startX) {
+        } else if (this.startY > food.startY) {
             this.moveUp();
         }
     }
 
     eat(food: Food) {
         this.satiety += food.satiety;
+        this.foodEaten += 1;
+    }
+    
+    clone(state) {
+        state.objects.rectangles.unshift(new Rectangle(
+            state.objects.rectangles.length,
+            this.startX - 50,
+            this.startY - 50,
+            this.width,
+            this.height,
+            this.speed,
+            this.needFood,
+            this.getFood,
+            200
+        ));
     }
 
     hasFoodNear(state): boolean {
@@ -113,18 +131,18 @@ export default class Rectangle implements RectangleInterface {
     }
 
     findNearestFood(state) {
-        let nearestLength = Math.abs(state.objects.food[0].startX - this.startX) +
-            Math.abs(state.objects.food[0].startY - this.startY);
+        let nearestLength = (Math.abs(this.startX - state.objects.food[0].startX)) +
+            Math.abs(this.startY - state.objects.food[0].startY);
         let index = 0;
 
         for (let i = 1; i < state.objects.food.length; i++) {
             if (
-                Math.abs(state.objects.food[i].startX - this.startX) +
-                Math.abs(state.objects.food[i].startY - this.startY)
-                < nearestLength
+                ((Math.abs(this.startX - state.objects.food[i].startX)) +
+                Math.abs(this.startY - state.objects.food[i].startY)
+                < nearestLength)
             ) {
-                nearestLength = Math.abs(state.objects.food[i].startX - this.startX) +
-                    Math.abs(state.objects.food[i].startY - this.startY);
+                nearestLength = (Math.abs(this.startX - state.objects.food[i].startX)) +
+                    Math.abs(this.startY - state.objects.food[i].startY);
                 index = i;
             }
         }

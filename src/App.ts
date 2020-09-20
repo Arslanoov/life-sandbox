@@ -8,6 +8,9 @@ let state: {
         id: string,
         height: string,
         width: string,
+        food: {
+            updateTime: number
+        },
         data: {
             food: object[],
             rectangles: object[]
@@ -18,18 +21,21 @@ let state: {
         }
     }
 } = {
-    updateTime: 50,
+    updateTime: 1,
     canvas: {
         id: 'canvas',
         height: '750',
         width: '500',
+        food: {
+            updateTime: 1000
+        },
         data: {
             food: [
                 {
                     startX: 200,
                     startY: 400,
-                    width: 20,
-                    height: 20,
+                    width: 5,
+                    height: 5,
                     satiety: 5
                 }
             ],
@@ -44,7 +50,7 @@ let state: {
                         food: {
                             needFood: true,
                             getFood: true,
-                            satiety: 2000
+                            satiety: 1000
                         }
                     }
                 }
@@ -102,6 +108,17 @@ function LifeCycleTick(state: any): void {
     }
 }
 
+function CreateRandomFood(state: any): void {
+    state.canvas.objects.food.unshift(new Food(
+        state.canvas.objects.food.length,
+        randomInteger(1, 500),
+        randomInteger(1, 500),
+        5,
+        5,
+        250
+    ));
+}
+
 function RedrawCanvas(state: any): void {
     const canvasState = state.canvas;
     const canvas: HTMLCanvasElement = document.getElementById(canvasState.id) as HTMLCanvasElement;
@@ -121,8 +138,12 @@ function RedrawCanvas(state: any): void {
 function Render(state: any): void {
     document.getElementById('root').append(InitCanvas(state));
     window.setInterval(function (): void {
+        CreateRandomFood(state);
+    }, state.canvas.food.updateTime);
+    window.setInterval(function (): void {
         LifeCycleTick(state);
         RedrawCanvas(state);
+        document.getElementById('population').innerText = 'Population:' + state.canvas.objects.rectangles.length;
     }, state.updateTime);
 }
 
@@ -131,3 +152,8 @@ function Render(state: any): void {
 Render(state);
 
 ///////////////////////
+
+function randomInteger(min: number, max: number): number {
+    let rand = min + Math.random() * (max + 1 - min);
+    return Math.floor(rand);
+}

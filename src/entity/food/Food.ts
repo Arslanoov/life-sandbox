@@ -30,8 +30,4 @@ export default class Food {
             this.height
         );
     }
-
-    eat(state) {
-        state.objects.food.splice(this.id, 1);
-    }
 }
