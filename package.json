@@ -2,7 +2,8 @@
     "name": "life",
     "version": "1.0.0",
     "scripts": {
-        "ts": "tsc"
+        "ts": "tsc",
+        "watch": "tsc -watch"
     },
     "dependencies": {
         "requirejs": "^2.3.6",

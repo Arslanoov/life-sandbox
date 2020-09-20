@@ -2,9 +2,7 @@
     "compilerOptions": {
         "target": "es6",
         "module": "commonjs",
-        "outDir": "./public",
-        "noImplicitAny": true,
-        "strictNullChecks": true
+        "outDir": "./public"
     },
     "include": [
         "src/**/*.ts"
