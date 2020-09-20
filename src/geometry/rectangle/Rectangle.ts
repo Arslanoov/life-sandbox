@@ -1,7 +1,7 @@
 import RectangleInterface from "./RectangleInterface";
 
 export default class Rectangle implements RectangleInterface {
-    startX: number;
+    private startX: number;
     private startY: number;
     width: number;
     height: number;
@@ -28,5 +28,13 @@ export default class Rectangle implements RectangleInterface {
 
     moveDown(coordinate: number): void {
         this.startY += coordinate;
+    }
+
+    moveLeft(coordinate: number): void {
+        this.startX -= coordinate;
+    }
+
+    moveRight(coordinate: number): void {
+        this.startX += coordinate;
     }
 }

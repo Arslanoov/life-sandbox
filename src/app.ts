@@ -59,7 +59,7 @@ function InitCanvas(state: any): HTMLElement {
 function LifeCycleTick(state: any): void {
     const canvasState = state.canvas;
 
-    state.canvas.objects.rectangles[0].moveDown(10);
+    state.canvas.objects.rectangles[0].moveRight(10);
 }
 
 function RedrawCanvas(state: any): void {

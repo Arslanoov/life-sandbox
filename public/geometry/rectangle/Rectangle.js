@@ -16,5 +16,11 @@ class Rectangle {
     moveDown(coordinate) {
         this.startY += coordinate;
     }
+    moveLeft(coordinate) {
+        this.startX -= coordinate;
+    }
+    moveRight(coordinate) {
+        this.startX += coordinate;
+    }
 }
 exports.default = Rectangle;

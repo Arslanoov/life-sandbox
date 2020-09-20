@@ -35,7 +35,7 @@ function InitCanvas(state) {
 }
 function LifeCycleTick(state) {
     const canvasState = state.canvas;
-    state.canvas.objects.rectangles[0].moveDown(10);
+    state.canvas.objects.rectangles[0].moveRight(10);
 }
 function RedrawCanvas(state) {
     const canvasState = state.canvas;
