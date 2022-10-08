@@ -1,7 +1,11 @@
-import RectangleInterface from "./RectangleInterface";
-import Food from "../../entity/food/Food";
+import Food from "./Food";
 
-export default class Rectangle implements RectangleInterface {
+export interface RectangleInterface {
+    draw(context: CanvasRenderingContext2D): void;
+    moveUp(coordinate: number): void;
+}
+
+export default class LivingCell implements RectangleInterface {
     id: number;
     private startX: number;
     private startY: number;
@@ -36,7 +40,10 @@ export default class Rectangle implements RectangleInterface {
     }
 
     public draw(context: CanvasRenderingContext2D): void {
-        context.strokeRect(
+        const image = new Image();
+        image.src = "img/bacteria.svg";
+        context.drawImage(
+            image,
             this.startX,
             this.startY,
             this.width,
@@ -44,66 +51,72 @@ export default class Rectangle implements RectangleInterface {
         );
     }
 
-    moveUp(): void {
-        this.startY -= this.speed;
+    moveUp(ticks: number = 1): void {
+        this.startY -= this.speed * ticks;
     }
 
-    moveDown(): void {
-        this.startY += this.speed;
+    moveDown(ticks: number = 1): void {
+        this.startY += this.speed * ticks;
     }
 
-    moveLeft(): void {
-        this.startX -= this.speed;
+    moveLeft(ticks: number = 1): void {
+        this.startX -= this.speed * ticks;
     }
 
-    moveRight(): void {
-        this.startX += this.speed;
+    moveRight(ticks: number = 1): void {
+        this.startX += this.speed * ticks;
     }
 
     feed(satiety: number) {
         this.satiety += satiety;
     }
 
-    live(state: object) {
-        this.starve(state);
-        this.huntFood(state);
+    live(state: object, ticks: number) {
+        this.starve(state, ticks);
+        this.huntFood(state, ticks);
     }
 
-    starve(state: object): void {
+    starve(state: object, ticks: number): void {
         if (this.needFood) {
-            this.satiety -= 1;
+            this.satiety = Math.max(this.satiety - ticks, 0);
             if (this.satiety === 0) {
                 this.die(state);
             }
         }
     }
 
-    huntFood(state): void {
+    huntFood(state, ticks: number): void {
         if (this.getFood && this.hasFoodNear(state)) {
             const foodInfo = this.findNearestFood(state);
             const food: Food = state.objects.food[foodInfo.index];
 
-            if (foodInfo.length === 0) {
+            if (foodInfo.length <= ticks) {
                 state.objects.food.splice(foodInfo.index, 1);
                 this.eat(food);
                 if (this.foodEaten % 2 === 0) {
                     this.clone(state);
                 }
             } else {
-                this.goToFood(state, food);
+                this.goToFood(state, food, ticks);
             }
         }
     }
 
-    goToFood(state, food: Food): void {
+    goToFood(state, food: Food, ticks: number): void {
         if (this.startX < food.startX) {
-            this.moveRight();
-        } else if (this.startY < food.startY) {
-            this.moveDown();
-        } else if (this.startX > food.startX) {
-            this.moveLeft();
-        } else if (this.startY > food.startY) {
-            this.moveUp();
+            this.moveRight(ticks);
+        }
+
+        if (this.startY < food.startY) {
+            this.moveDown(ticks);
+        }
+
+        if (this.startX > food.startX) {
+            this.moveLeft(ticks);
+        }
+
+        if (this.startY > food.startY) {
+            this.moveUp(ticks);
         }
     }
 
@@ -113,8 +126,8 @@ export default class Rectangle implements RectangleInterface {
     }
     
     clone(state) {
-        state.objects.rectangles.unshift(new Rectangle(
-            state.objects.rectangles.length,
+        state.objects.livingCells.unshift(new LivingCell(
+            state.objects.livingCells.length,
             this.startX - 50,
             this.startY - 50,
             this.width,
@@ -131,18 +144,33 @@ export default class Rectangle implements RectangleInterface {
     }
 
     findNearestFood(state) {
-        let nearestLength = (Math.abs(this.startX - state.objects.food[0].startX)) +
-            Math.abs(this.startY - state.objects.food[0].startY);
+        let nearestLength = Math.max(
+            (
+                Math.abs(this.startX - state.objects.food[0].startX) +
+                Math.abs(this.startY - state.objects.food[0].startY)
+            ),
+            0
+        );
         let index = 0;
 
         for (let i = 1; i < state.objects.food.length; i++) {
             if (
-                ((Math.abs(this.startX - state.objects.food[i].startX)) +
-                Math.abs(this.startY - state.objects.food[i].startY)
-                < nearestLength)
+                Math.max(
+                    (
+                        Math.abs(this.startX - state.objects.food[i].startX) +
+                        Math.abs(this.startY - state.objects.food[i].startY)
+                    ),
+                    0
+                )
+                < nearestLength
             ) {
-                nearestLength = (Math.abs(this.startX - state.objects.food[i].startX)) +
-                    Math.abs(this.startY - state.objects.food[i].startY);
+                nearestLength = Math.max(
+                    (
+                        Math.abs(this.startX - state.objects.food[i].startX) +
+                        Math.abs(this.startY - state.objects.food[i].startY)
+                    ),
+                    0
+                );
                 index = i;
             }
         }
@@ -154,6 +182,6 @@ export default class Rectangle implements RectangleInterface {
     }
 
     die(state): void {
-        state.objects.rectangles.splice(this.id, 1);
+        state.objects.livingCells.splice(this.id, 1);
     }
 }

@@ -11,23 +11,23 @@ export default class Food {
         startX: number,
         startY: number,
         width: number,
-        height: number,
         satiety: number
     ) {
         this.id = id;
         this.startX = startX;
         this.startY = startY;
         this.width = width;
-        this.height = height;
         this.satiety = satiety;
     }
 
     public draw(context: CanvasRenderingContext2D): void {
-        context.strokeRect(
+        context.fillText(
+            `🍖`,
             this.startX,
             this.startY,
-            this.width,
-            this.height
+            this.width
         );
+
+        context.font = "20px serif";
     }
 }

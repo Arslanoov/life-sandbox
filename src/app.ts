@@ -1,67 +1,11 @@
-import Rectangle from "./geometry/rectangle/Rectangle";
-import RectangleInterface from "./geometry/rectangle/RectangleInterface";
-import Food from "./entity/food/Food";
+import { initialState, StateInterface } from "./const/state";
+import LivingCell from "./entity/LivingCell";
+import Food from "./entity/Food";
+import animate from "./utils/animate";
 
-let state: {
-    updateTime: number,
-    canvas: {
-        id: string,
-        height: string,
-        width: string,
-        food: {
-            updateTime: number
-        },
-        data: {
-            food: object[],
-            rectangles: object[]
-        },
-        objects: {
-            food: Food[],
-            rectangles: RectangleInterface[]
-        }
-    }
-} = {
-    updateTime: 1,
-    canvas: {
-        id: 'canvas',
-        height: '750',
-        width: '500',
-        food: {
-            updateTime: 1000
-        },
-        data: {
-            food: [
-                {
-                    startX: 200,
-                    startY: 400,
-                    width: 5,
-                    height: 5,
-                    satiety: 5
-                }
-            ],
-            rectangles: [
-                {
-                    startX: 2,
-                    startY: 4,
-                    width: 50,
-                    height: 50,
-                    speed: 1,
-                    behavior: {
-                        food: {
-                            needFood: true,
-                            getFood: true,
-                            satiety: 1000
-                        }
-                    }
-                }
-            ]
-        },
-        objects: {
-            food: [],
-            rectangles: []
-        }
-    }
-};
+import "./styles/app.scss";
+
+const state: StateInterface = initialState;
 
 function InitCanvas(state: any): HTMLElement {
     const canvasState = state.canvas;
@@ -71,17 +15,17 @@ function InitCanvas(state: any): HTMLElement {
     canvas.width = canvasState.width;
     canvas.height = canvasState.height;
 
-    for (let i = 0; i < canvasState.data.rectangles.length; i++) {
-        canvasState.objects.rectangles.unshift(new Rectangle(
+    for (let i = 0; i < canvasState.data.livingCells.length; i++) {
+        canvasState.objects.livingCells.unshift(new LivingCell(
             i,
-            canvasState.data.rectangles[i].startX,
-            canvasState.data.rectangles[i].startY,
-            canvasState.data.rectangles[i].width,
-            canvasState.data.rectangles[i].height,
-            canvasState.data.rectangles[i].speed,
-            canvasState.data.rectangles[i].behavior.food.needFood,
-            canvasState.data.rectangles[i].behavior.food.getFood,
-            canvasState.data.rectangles[i].behavior.food.satiety
+            canvasState.data.livingCells[i].startX,
+            canvasState.data.livingCells[i].startY,
+            canvasState.data.livingCells[i].width,
+            canvasState.data.livingCells[i].height,
+            canvasState.data.livingCells[i].speed,
+            canvasState.data.livingCells[i].behavior.food.needFood,
+            canvasState.data.livingCells[i].behavior.food.getFood,
+            canvasState.data.livingCells[i].behavior.food.satiety
         ));
     }
 
@@ -91,7 +35,6 @@ function InitCanvas(state: any): HTMLElement {
             canvasState.data.food[i].startX,
             canvasState.data.food[i].startY,
             canvasState.data.food[i].width,
-            canvasState.data.food[i].height,
             canvasState.data.food[i].satiety
         ));
     }
@@ -102,9 +45,9 @@ function InitCanvas(state: any): HTMLElement {
 function LifeCycleTick(state: any): void {
     const canvasState = state.canvas;
 
-    for (let i = 0; i < canvasState.objects.rectangles.length; i++) {
-        let entity = canvasState.objects.rectangles[i];
-        entity.live(canvasState);
+    for (let i = 0; i < canvasState.objects.livingCells.length; i++) {
+        let entity = canvasState.objects.livingCells[i];
+        entity.live(canvasState, 2);
     }
 }
 
@@ -113,8 +56,7 @@ function CreateRandomFood(state: any): void {
         state.canvas.objects.food.length,
         randomInteger(1, 500),
         randomInteger(1, 500),
-        5,
-        5,
+        20,
         250
     ));
 }
@@ -126,8 +68,8 @@ function RedrawCanvas(state: any): void {
 
     context.clearRect(0, 0, canvasState.width, canvasState.height);
 
-    for (let i = 0; i < canvasState.objects.rectangles.length; i++) {
-        state.canvas.objects.rectangles[i].draw(context);
+    for (let i = 0; i < canvasState.objects.livingCells.length; i++) {
+        state.canvas.objects.livingCells[i].draw(context);
     }
 
     for (let i = 0; i < canvasState.objects.food.length; i++) {
@@ -135,23 +77,21 @@ function RedrawCanvas(state: any): void {
     }
 }
 
-function Render(state: any): void {
+function Render(state: any) {
     document.getElementById('root').append(InitCanvas(state));
-    window.setInterval(function (): void {
+
+    animate(function () {
         CreateRandomFood(state);
-    }, state.canvas.food.updateTime);
-    window.setInterval(function (): void {
+    }, state.canvas.food.updateFps);
+
+    animate(function () {
         LifeCycleTick(state);
         RedrawCanvas(state);
-        document.getElementById('population').innerText = 'Population:' + state.canvas.objects.rectangles.length;
-    }, state.updateTime);
+        document.querySelector('.population').innerHTML = 'Population: ' + state.canvas.objects.livingCells.length;
+    }, state.updateFps);
 }
 
-////////////////////////////////
-
 Render(state);
-
-///////////////////////
 
 function randomInteger(min: number, max: number): number {
     let rand = min + Math.random() * (max + 1 - min);
